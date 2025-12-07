@@ -1,0 +1,33 @@
+stages:
+  # ЭТАП 1: Сбор данных
+  parse:
+    cmd: python src/data/vk_parser.py
+    deps:
+      - src/data/vk_parser.py
+    # outs - это файлы, которые создает скрипт. DVC возьмет их под контроль.
+    outs:
+      - data/raw/aviation.csv
+      - data/raw/road_transport.csv
+
+  # ЭТАП 2: Предобработка (Очистка + Эмбеддинги)
+  preprocess:
+    cmd: python src/data/preprocessor.py
+    deps:
+      - src/data/preprocessor.py
+      - data/raw/aviation.csv
+      - data/raw/road_transport.csv
+    outs:
+      - data/processed/data_with_embeddings.pkl
+      - data/processed/processed_data.csv
+
+  # ЭТАП 3: Обучение модели
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - src/models/train.py
+      - data/processed/data_with_embeddings.pkl
+      - configs/train_config.yaml # Если параметры меняются - переобучаем
+    outs:
+      # Мы сохраняем модель локально для воспроизводимости DVC,
+      # даже если MLflow тоже отправляет её в S3.
+      - models/logreg_model.pkl

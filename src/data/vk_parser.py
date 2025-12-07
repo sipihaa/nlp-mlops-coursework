@@ -24,7 +24,6 @@ def parse_group_posts(group_id):
     print(f"Начинаем парсинг группы {group_id}...")
     while True:
         try:
-            # Запрос постов
             response = api.wall.get(
                 owner_id=group_id, 
                 offset=offset, 
@@ -33,27 +32,23 @@ def parse_group_posts(group_id):
             
             items = response['items']
             
-            # Если посты кончились
             if not items:
                 print("Посты закончились.")
                 break
                 
-            # Сохраняем
             posts.extend(items)
             
             offset += 100
             
-            # Визуализация прогресса
             print(f"Загружено: {len(posts)} постов")
             
-            # ВАЖНО: Пауза, чтобы не ловить Error 29
             time.sleep(0.4) 
 
         except ApiError as e:
             if e.code == 29:
                 print("Поймали Rate Limit (Err 29). Ждем 10 секунд...")
-                time.sleep(10) # Ждем долго
-                continue       # И пробуем ТОТ ЖЕ запрос снова (offset не меняем)
+                time.sleep(10)
+                continue
             else:
                 print(f"Ошибка API Error: {e}")
                 break

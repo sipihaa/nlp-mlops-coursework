@@ -1,0 +1,12 @@
+# Параметры логистической регрессии
+model_params:
+  random_state: 42
+  max_iter: 10000
+  solver: "lbfgs"
+  C: 1.0            # Коэффициент регуляризации (чем меньше, тем сильнее)
+  penalty: "l2"     # Тип регуляризации (l1, l2, elasticnet)
+
+# Параметры разделения данных
+split_params:
+  test_size: 0.2
+  random_state: 42
