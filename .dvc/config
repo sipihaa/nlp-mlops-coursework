@@ -1,0 +1,6 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = s3://nlp-mlops-coursework/dvc-store
+    endpointurl = https://storage.yandexcloud.net
+    use_ssl = true
