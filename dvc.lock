@@ -29,8 +29,8 @@ stages:
       size: 3492498191
     - path: src/data/preprocessor.py
       hash: md5
-      md5: d3e4d17f96ea7b79b5d8db491d2bdf21
-      size: 2067
+      md5: aabe848b6a7ee58a64d219dffb2769d6
+      size: 2316
     outs:
     - path: data/processed/data_with_embeddings.pkl
       hash: md5
