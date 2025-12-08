@@ -1,40 +1,25 @@
 import pandas as pd
 import re
+import nltk
 from nltk.corpus import stopwords
 import pymorphy3
 from tqdm.auto import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer
 
 
-aviation_data = pd.read_csv('data/raw/aviation.csv')
-road_transport_data = pd.read_csv('data/raw/road_transport.csv')
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
-data = pd.concat([aviation_data, road_transport_data])
+MORPH = pymorphy3.MorphAnalyzer()
+STOP_WORDS = set(stopwords.words('russian'))
 
-data = data[data['marked_as_ads'] == 0]
-
-data = data[['text', 'y']]
-
-data.dropna(inplace=True)
-data.drop_duplicates(keep='first', inplace=True)
-
-y_map = {
-    'aviation': 0,
-    'road_transport': 1
-}
-data['y'] = data['y'].map(y_map)
-
-morph = pymorphy3.MorphAnalyzer()
-stop_words = set(stopwords.words('russian'))
-
-garbage_list = [
-    'http', 'https', 'vk', 'cc', 'com', 'ru', 'me', 'avtoobmen'
-]
-stop_words.update(garbage_list)
+GARBAGE_LIST = ['http', 'https', 'vk', 'cc', 'com', 'ru', 'avtoobmen']
+STOP_WORDS.update(GARBAGE_LIST)
 
 
-def preprocess_text(text, stop_words):
+def preprocess_text(text):
     if not isinstance(text, str): 
         return ""
     text = text.lower()
@@ -47,33 +32,59 @@ def preprocess_text(text, stop_words):
     lemmas = []
     for word in words:
         if len(word) > 1:
-            lemma = morph.parse(word)[0].normal_form
+            lemma = MORPH.parse(word)[0].normal_form
                 
-            if lemma not in stop_words:
+            if lemma not in STOP_WORDS:
                 lemmas.append(lemma)
 
     return " ".join(lemmas)
 
 
-print("\nНачало предобработки текста...")
+def run_preprocessing_pipeline(input_avia_path, input_auto_path, output_processed_data_path, output_embeddings_data_path):
+    aviation_data = pd.read_csv(input_avia_path)
+    road_transport_data = pd.read_csv(input_auto_path)
 
-tqdm.pandas()
-data['processed_text'] = data['text'].progress_apply(
-    lambda text: preprocess_text(text, stop_words)
-)
+    data = pd.concat([aviation_data, road_transport_data])
 
-print("Предобработка текста завершена.")
+    data = data[data['marked_as_ads'] == 0]
 
-data.to_csv('data/processed/processed_data.csv')
+    data = data[['text', 'y']]
 
-model_name = 'cointegrated/rubert-tiny2'
-emb_model = SentenceTransformer(model_name, device='cpu')
+    data.dropna(inplace=True)
+    data.drop_duplicates(keep='first', inplace=True)
 
-print("Модель загружена")
+    y_map = {
+        'aviation': 0,
+        'road_transport': 1
+    }
+    data['y'] = data['y'].map(y_map)
 
-embeddings = emb_model.encode(data['processed_text'].tolist(), show_progress_bar=True)
+    print("\nНачало предобработки текста...")
 
-data['embeddings'] = list(embeddings)
+    tqdm.pandas()
+    data['processed_text'] = data['text'].progress_apply(preprocess_text)
 
-data.to_pickle('data/processed/data_with_embeddings.pkl')
-print("Датасет с эмбеддингами сохранен!")
+    print("Предобработка текста завершена.")
+
+    data.to_csv(output_processed_data_path)
+
+    model_name = 'cointegrated/rubert-tiny2'
+    emb_model = SentenceTransformer(model_name, device='cpu')
+
+    print("Модель векторайзер загружена")
+
+    embeddings = emb_model.encode(data['processed_text'].tolist(), show_progress_bar=True)
+
+    data['embeddings'] = list(embeddings)
+
+    data.to_pickle(output_embeddings_data_path)
+    print("Датасет с эмбеддингами сохранен!")
+
+
+if __name__ == "__main__":
+    input_avia_path = 'data/raw/aviation.csv'
+    input_auto_path = 'data/raw/road_transport.csv'
+    output_processed_data_path = 'data/processed/processed_data.csv'
+    output_embeddings_data_path = 'data/processed/data_with_embeddings.pkl'
+    
+    run_preprocessing_pipeline(input_avia_path, input_auto_path, output_processed_data_path, output_embeddings_data_path)
