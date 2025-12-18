@@ -30,4 +30,4 @@ stages:
     outs:
       # Мы сохраняем модель локально для воспроизводимости DVC,
       # даже если MLflow тоже отправляет её в S3.
-      - models/logreg_model.pkl
+      - models/classifier_model.pkl

@@ -7,6 +7,7 @@ import pandas as pd
 import joblib
 import yaml
 from dotenv import load_dotenv
+import git
 
 
 load_dotenv()
@@ -26,6 +27,21 @@ except mlflow.exceptions.MlflowException:
     experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
 
 mlflow.set_experiment(experiment_name)
+
+repo = git.Repo(search_parent_directories=True)
+sha = repo.head.object.hexsha
+
+# Проверяем, есть ли незакоммиченные изменения
+if repo.is_dirty():
+    mlflow.set_tag("git.commit", f"{sha}-dirty")
+    mlflow.set_tag("git.dirty", "True")
+    # Можно даже сохранить diff изменений как артефакт!
+    diff = repo.git.diff(repo.head.commit.tree)
+    mlflow.log_text(diff, "git_diff.patch")
+else:
+    mlflow.set_tag("git.commit", sha)
+    mlflow.set_tag("git.dirty", "False")
+
 
 def train():
     print("Загрузка данных...")
@@ -74,7 +90,7 @@ def train():
         
         print(f"Модель сохранена в S3: {artifact_root}/{mlflow.active_run().info.run_id}")
     
-    joblib.dump(clf, 'models/logreg_model.pkl')
+    joblib.dump(clf, 'models/classifier_model.pkl')
 
     print("Модель сохранена локально")
 
