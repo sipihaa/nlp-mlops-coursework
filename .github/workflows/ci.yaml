@@ -41,17 +41,17 @@ jobs:
 
     - name: Build Docker Images
       run: |
-        docker-compose build
+        docker compose build
 
     - name: Run Integration Test (Start Services)
       run: |
-        docker-compose up -d
+        docker compose up -d
         
         echo "Waiting for services..."
         sleep 20 # Ждем инициализации
         
         # Проверяем статус контейнеров
-        docker-compose ps
+        docker compose ps
         
         # Проверяем health check приложения
         curl --fail http://localhost:8080/health || exit 1
@@ -63,4 +63,4 @@ jobs:
 
     - name: Cleanup
       if: always()
-      run: docker-compose down
+      run: docker compose down

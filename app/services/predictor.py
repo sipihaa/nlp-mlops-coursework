@@ -13,7 +13,13 @@ class MLService:
 
     def _load_model(self):
         print("Загрузка модели BERT...")
-        self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
+
+        model_path = "/app/rubert-tiny2" 
+        if os.path.exists(model_path):
+            self.bert_model = SentenceTransformer(model_path)
+        else:
+            self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
+            
         print("Модель BERT загружена!")
 
     def predict(self, text: str) -> dict:
