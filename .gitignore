@@ -5,3 +5,4 @@ __pycache__
 /data/
 /models/
 mlruns/
+triton_repo/classifier/1/model.onnx

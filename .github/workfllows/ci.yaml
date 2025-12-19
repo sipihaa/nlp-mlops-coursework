@@ -1,0 +1,66 @@
+name: VK Classifier CI/CD
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        pip install poetry dvc[s3]
+        poetry export --without-hashes --format=requirements.txt > requirements.txt
+        pip install -r requirements.txt
+
+    - name: DVC Pull (Download Data & Models)
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        MLFLOW_S3_ENDPOINT_URL: ${{ secrets.MLFLOW_S3_ENDPOINT_URL }}
+      run: |
+        # Настраиваем dvc remote (если он не в гите) или просто используем конфиг
+        # dvc remote modify myremote access_key_id ... (обычно dvc pull берет из env)
+        dvc pull
+
+    # Тут можно добавить шаг pytest
+    # - name: Run Tests
+    #   run: pytest tests/
+
+    - name: Build Docker Images
+      run: |
+        docker-compose build
+
+    - name: Run Integration Test (Start Services)
+      run: |
+        docker-compose up -d
+        
+        echo "Waiting for services..."
+        sleep 20 # Ждем инициализации
+        
+        # Проверяем статус контейнеров
+        docker-compose ps
+        
+        # Проверяем health check приложения
+        curl --fail http://localhost:8080/health || exit 1
+        
+        # Можно даже сделать тестовый запрос
+        curl -X POST "http://localhost:8080/predict" \
+             -H "Content-Type: application/json" \
+             -d '{"text": "Тестовый полет на самолете"}'
+
+    - name: Cleanup
+      if: always()
+      run: docker-compose down

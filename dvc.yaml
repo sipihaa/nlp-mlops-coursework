@@ -31,3 +31,11 @@ stages:
       # Мы сохраняем модель локально для воспроизводимости DVC,
       # даже если MLflow тоже отправляет её в S3.
       - models/classifier_model.pkl
+
+  convert:
+    cmd: python src/models/convert_to_onnx.py
+    deps:
+      - src/models/convert_to_onnx.py
+      - models/classifier_model.pkl   # Зависит от результата обучения
+    outs:
+      - triton_repo/classifier/1/model.onnx # DVC будет следить за ONNX файлом

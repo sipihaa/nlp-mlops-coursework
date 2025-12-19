@@ -1,27 +1,20 @@
-import sys
 import os
-import joblib
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from src.data.preprocessor import preprocess_text
-
-sys.path.append(os.getcwd()) 
+import tritonclient.http as httpclient
 
 
 class MLService:
     def __init__(self):
         self.bert_model = None
-        self.classifier = None
         self.labels_map = {0: "Авиация", 1: "Автомобильный транспорт"}
-        self._load_models()
+        self._load_model()
 
-    def _load_models(self):
-        print("Loading models...")
+    def _load_model(self):
+        print("Загрузка модели BERT...")
         self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
-        
-        model_path = "models/logreg_model.pkl"
-        self.classifier = joblib.load(model_path)
-        print("Модель загружена!")
+        print("Модель BERT загружена!")
 
     def predict(self, text: str) -> dict:
         clean_text = preprocess_text(text)
@@ -30,18 +23,28 @@ class MLService:
 
         embedding = self.bert_model.encode([clean_text])
 
-        pred_id = self.classifier.predict(embedding)[0]
-        
-        try:
-            probs = self.classifier.predict_proba(embedding)[0]
-            confidence = float(np.max(probs))
-        except AttributeError:
-            confidence = 1.0
+        triton_url = os.getenv("TRITON_URL", "localhost:8000")
+
+        client = httpclient.InferenceServerClient(url=triton_url)
+
+        inputs = [
+            httpclient.InferInput("float_input", embedding.shape, "FP32")
+        ]
+        outputs = [
+            httpclient.InferRequestedOutput("label"),
+            httpclient.InferRequestedOutput("probabilities")
+        ]
+        inputs[0].set_data_from_numpy(embedding.astype(np.float32))
+
+        results = client.infer(model_name="classifier", inputs=inputs, outputs=outputs)
+
+        pred_id = int(results.as_numpy("label")[0])
+        probs = results.as_numpy("probabilities")[0]
 
         return {
             "label": self.labels_map.get(pred_id, "Unknown"),
             "class_id": int(pred_id),
-            "confidence": confidence
+            "confidence": float(probs[pred_id])
         }
 
 
