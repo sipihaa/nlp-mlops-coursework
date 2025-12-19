@@ -10,16 +10,14 @@ WORKDIR /app
 
 # 4. Установка зависимостей Python
 # Вариант с Poetry (более правильный для dev, но export надежнее для prod)
-RUN pip install poetry
+# RUN pip install poetry
 
-# Копируем файлы описания зависимостей
-COPY pyproject.toml poetry.lock ./
+# COPY pyproject.toml poetry.lock ./
 
-# Экспортируем в requirements.txt и ставим через pip (чтобы не тащить poetry в рантайм, если хотим сэкономить место, 
-# но здесь мы оставим poetry для простоты, или используем pip install)
-# ЛУЧШАЯ ПРАКТИКА:
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root
+# RUN poetry config virtualenvs.create false \
+#     && poetry install --no-interaction --no-ansi --no-root
+
+RUN pip install fastapi numpy sentence_transformers tritonclient
 
 # 5. Пре-загрузка BERT (чтобы не качать при старте контейнера каждый раз)
 # Это критично для скорости старта
