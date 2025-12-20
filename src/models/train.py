@@ -31,17 +31,6 @@ mlflow.set_experiment(experiment_name)
 repo = git.Repo(search_parent_directories=True)
 sha = repo.head.object.hexsha
 
-# Проверяем, есть ли незакоммиченные изменения
-if repo.is_dirty():
-    mlflow.set_tag("git.commit", f"{sha}-dirty")
-    mlflow.set_tag("git.dirty", "True")
-    # Можно даже сохранить diff изменений как артефакт!
-    diff = repo.git.diff(repo.head.commit.tree)
-    mlflow.log_text(diff, "git_diff.patch")
-else:
-    mlflow.set_tag("git.commit", sha)
-    mlflow.set_tag("git.dirty", "False")
-
 
 def train():
     print("Загрузка данных...")
@@ -63,10 +52,19 @@ def train():
     )
 
     print("Начало обучения...")
-
-    mlflow.end_run()
     
     with mlflow.start_run():
+        # Проверяем, есть ли незакоммиченные изменения
+        if repo.is_dirty():
+            mlflow.set_tag("git.commit", f"{sha}-dirty")
+            mlflow.set_tag("git.dirty", "True")
+            # Можно даже сохранить diff изменений как артефакт!
+            diff = repo.git.diff(repo.head.commit.tree)
+            mlflow.log_text(diff, "git_diff.patch")
+        else:
+            mlflow.set_tag("git.commit", sha)
+            mlflow.set_tag("git.dirty", "False")
+        
         mlflow.log_params(model_params)
         mlflow.log_params(split_params)
 

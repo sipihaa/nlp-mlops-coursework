@@ -4,10 +4,9 @@ WORKDIR /app
 
 RUN pip install fastapi uvicorn pandas nltk tqdm pymorphy3 sentence_transformers tritonclient geventhttpclient
 
-COPY models/rubert-tiny2 /app/rubert-tiny2
+ENV HF_HUB_DISABLE_PROGRESS_BARS=1
 
-# Говорим коду искать модель здесь
-ENV SENTENCE_TRANSFORMERS_HOME=/app
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('cointegrated/rubert-tiny2')"
 
 COPY app/ app/
 COPY src/ src/
