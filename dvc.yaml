@@ -4,7 +4,6 @@ stages:
     cmd: python src/data/vk_parser.py
     deps:
       - src/data/vk_parser.py
-    # outs - это файлы, которые создает скрипт. DVC возьмет их под контроль.
     outs:
       - data/raw/aviation.csv
       - data/raw/road_transport.csv
@@ -26,16 +25,14 @@ stages:
     deps:
       - src/models/train.py
       - data/processed/data_with_embeddings.pkl
-      - configs/train_config.yaml # Если параметры меняются - переобучаем
+      - configs/train_config.yaml
     outs:
-      # Мы сохраняем модель локально для воспроизводимости DVC,
-      # даже если MLflow тоже отправляет её в S3.
       - models/classifier_model.pkl
 
   convert:
     cmd: python src/models/convert_to_onnx.py
     deps:
       - src/models/convert_to_onnx.py
-      - models/classifier_model.pkl   # Зависит от результата обучения
+      - models/classifier_model.pkl
     outs:
-      - triton_repo/classifier/1/model.onnx # DVC будет следить за ONNX файлом
+      - triton_repo/classifier/1/model.onnx
