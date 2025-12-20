@@ -53,10 +53,26 @@ stages:
       size: 1166801774
     - path: src/models/train.py
       hash: md5
-      md5: 202ba263e2f4bb67c8c547548380825a
-      size: 2339
+      md5: 5da035b621bf1b2a6e7201bb94e7b1ba
+      size: 2923
     outs:
-    - path: models/logreg_model.pkl
+    - path: models/classifier_model.pkl
       hash: md5
       md5: 454f25095649ff473568baa82891821b
       size: 3359
+  convert:
+    cmd: python src/models/convert_to_onnx.py
+    deps:
+    - path: models/classifier_model.pkl
+      hash: md5
+      md5: 454f25095649ff473568baa82891821b
+      size: 3359
+    - path: src/models/convert_to_onnx.py
+      hash: md5
+      md5: 1f1cd152ea6d86001644ac33d8fbf1f5
+      size: 674
+    outs:
+    - path: triton_repo/classifier/1/model.onnx
+      hash: md5
+      md5: 2a61c16c841332ac5ec0234c3a9e6ba2
+      size: 3509

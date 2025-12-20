@@ -63,6 +63,8 @@ def train():
     )
 
     print("Начало обучения...")
+
+    mlflow.end_run()
     
     with mlflow.start_run():
         mlflow.log_params(model_params)
