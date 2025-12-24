@@ -27,7 +27,7 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v4
-        env:
+      env:
         RUNNER_TOOL_CACHE: /Users/vladm/actions-runner/_work/_tool
       with:
         python-version: "3.12"
