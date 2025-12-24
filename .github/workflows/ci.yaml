@@ -47,10 +47,6 @@ jobs:
         # dvc remote modify myremote access_key_id ... (обычно dvc pull берет из env)
         dvc pull
 
-    # Тут можно добавить шаг pytest
-    # - name: Run Tests
-    #   run: pytest tests/
-
     - name: Build Docker Images
       run: |
         docker compose build
