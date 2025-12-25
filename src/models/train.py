@@ -13,7 +13,7 @@ import argparse
 load_dotenv()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--exp_name", type=str, default="default-exp")
+parser.add_argument("--exp_name", type=str, default="default-run")
 args = parser.parse_args()
 
 mlflow_tracking_uri = "file:./mlruns"
@@ -83,6 +83,7 @@ def train():
     joblib.dump(clf, 'models/classifier_model.pkl')
 
     print("Модель сохранена локально")
+
 
 if __name__ == "__main__":
     train()
