@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN pip install fastapi uvicorn pandas nltk tqdm pymorphy3 sentence_transformers tritonclient geventhttpclient
+RUN pip install fastapi uvicorn pandas nltk tqdm pymorphy3 sentence_transformers tritonclient geventhttpclient streamlit
 
 ENV HF_HUB_DISABLE_PROGRESS_BARS=1
 

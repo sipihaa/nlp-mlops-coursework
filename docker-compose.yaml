@@ -23,3 +23,13 @@ services:
     depends_on:
       triton:
         condition: service_healthy
+
+  ui:
+    build: .
+    command: streamlit run src/ui/app_ui.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://app:8000 
+    depends_on:
+      - app

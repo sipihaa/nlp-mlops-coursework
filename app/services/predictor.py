@@ -51,7 +51,7 @@ class MLService:
 
         results = client.infer(model_name="classifier", inputs=inputs, outputs=outputs)
 
-        pred_id = int(results.as_numpy("label")[0])
+        pred_id = results.as_numpy("label")[0].item()
         probs = results.as_numpy("probabilities")[0]
 
         return {
