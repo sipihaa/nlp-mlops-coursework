@@ -41,11 +41,11 @@ stages:
       md5: d8f4aee11f3d16a9af2c993a53d678ae
       size: 764195827
   train:
-    cmd: python src/models/train.py --exp_name clean-logreg-v2
+    cmd: python src/models/train.py
     deps:
     - path: configs/train_config.yaml
       hash: md5
-      md5: 5197d9d14625c281d1920537c1dd20d9
+      md5: f6ebbb97b781c9ef0a751c9bbed534b4
       size: 145
     - path: data/processed/data_with_embeddings.pkl
       hash: md5
@@ -53,22 +53,19 @@ stages:
       size: 1166801774
     - path: src/models/train.py
       hash: md5
-      md5: 2525e42a92f0abcc16d1c3a17ea05a35
-      size: 2521
-    params:
-      params.yaml:
-        exp_name: clean-logreg-v2
+      md5: c33239781ac93931808b28feffacfaa0
+      size: 2390
     outs:
     - path: models/classifier_model.pkl
       hash: md5
-      md5: 454f25095649ff473568baa82891821b
+      md5: 3061acdc28262330cb587e2ce466af13
       size: 3359
   convert:
     cmd: python src/models/convert_to_onnx.py
     deps:
     - path: models/classifier_model.pkl
       hash: md5
-      md5: 454f25095649ff473568baa82891821b
+      md5: 3061acdc28262330cb587e2ce466af13
       size: 3359
     - path: src/models/convert_to_onnx.py
       hash: md5
@@ -77,5 +74,5 @@ stages:
     outs:
     - path: triton_repo/classifier/1/model.onnx
       hash: md5
-      md5: 2a61c16c841332ac5ec0234c3a9e6ba2
+      md5: 849a1231e08fe93a7732f3997ce5eee0
       size: 3509

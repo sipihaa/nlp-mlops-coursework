@@ -7,14 +7,9 @@ import pandas as pd
 import joblib
 import yaml
 from dotenv import load_dotenv
-import argparse
 
 
 load_dotenv()
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--exp_name", type=str, default="default-run")
-args = parser.parse_args()
 
 mlflow_tracking_uri = "file:./mlruns"
 artifact_root = "s3://nlp-mlops-coursework/mlflow-artifacts"
@@ -22,6 +17,7 @@ artifact_root = "s3://nlp-mlops-coursework/mlflow-artifacts"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 
 experiment_name = "vk_classification"
+run_name = "clean-logreg-v3"
 try:
     experiment_id = mlflow.create_experiment(
         name=experiment_name,
@@ -54,7 +50,7 @@ def train():
 
     print("Начало обучения...")
     
-    with mlflow.start_run(run_name=args.exp_name):        
+    with mlflow.start_run(run_name=run_name):        
         mlflow.log_params(model_params)
         mlflow.log_params(split_params)
 
@@ -74,8 +70,8 @@ def train():
 
         mlflow.sklearn.log_model(
             sk_model=clf,
-            artifact_path="logreg_model",
-            registered_model_name="VK_Classifier_LogReg"
+            name="classifier_model",
+            registered_model_name="classifier_model"
         )
         
         print(f"Модель сохранена в S3: {artifact_root}/{mlflow.active_run().info.run_id}")
