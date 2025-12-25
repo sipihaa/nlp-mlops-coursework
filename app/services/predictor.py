@@ -7,20 +7,29 @@ import tritonclient.http as httpclient
 
 class MLService:
     def __init__(self):
-        self.bert_model = None
+        self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
         self.labels_map = {0: "Авиация", 1: "Автомобильный транспорт"}
-        self._load_model()
+        self.triton_url = os.getenv("TRITON_URL", "localhost:8000")
 
-    def _load_model(self):
-        print("Загрузка модели BERT...")
 
-        model_path = "/app/rubert-tiny2" 
-        if os.path.exists(model_path):
-            self.bert_model = SentenceTransformer(model_path)
-        else:
-            self.bert_model = SentenceTransformer('cointegrated/rubert-tiny2')
+    def check_health(self) -> bool:
+        try:
+            client = httpclient.InferenceServerClient(url=self.triton_url)
             
-        print("Модель BERT загружена!")
+            if not client.is_server_ready():
+                print("Triton server is not ready")
+                return False
+            
+            if not client.is_model_ready("classifier"):
+                print("Model 'classifier' is not ready")
+                return False
+                
+            return True
+
+        except Exception as e:
+            print(f"Health check failed: {e}")
+            return False
+            
 
     def predict(self, text: str) -> dict:
         clean_text = preprocess_text(text)
@@ -29,9 +38,7 @@ class MLService:
 
         embedding = self.bert_model.encode([clean_text])
 
-        triton_url = os.getenv("TRITON_URL", "localhost:8000")
-
-        client = httpclient.InferenceServerClient(url=triton_url)
+        client = httpclient.InferenceServerClient(url=self.triton_url)
 
         inputs = [
             httpclient.InferInput("float_input", embedding.shape, "FP32")

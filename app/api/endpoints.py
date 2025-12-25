@@ -7,9 +7,12 @@ router = APIRouter()
 
 @router.get("/health")
 def health_check():
-    if ml_service.classifier is None:
-        raise HTTPException(status_code=503, detail="Модель не загружена")
-    return {"status": "ok"}
+    is_healthy = ml_service.check_health()
+    
+    if is_healthy:
+        return {"status": "ok"}
+    else:
+        raise HTTPException(status_code=503, detail="Service Unavailable")
 
 @router.post("/predict", response_model=PredictionResponse)
 def predict_endpoint(request: PredictionRequest):
