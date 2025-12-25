@@ -21,13 +21,11 @@ stages:
 
   # ЭТАП 3: Обучение модели
   train:
-    cmd: python src/models/train.py --exp_name ${exp_name}
+    cmd: python src/models/train.py
     deps:
       - src/models/train.py
       - data/processed/data_with_embeddings.pkl
       - configs/train_config.yaml
-    params:
-      - exp_name
     outs:
       - models/classifier_model.pkl
 
