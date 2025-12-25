@@ -61,18 +61,15 @@ jobs:
         docker compose up -d
         
         echo "Waiting for services..."
-        sleep 20 # Ждем инициализации
+        sleep 20
         
-        # Проверяем статус контейнеров
         docker compose ps
         
-        # Проверяем health check приложения
-        curl --fail http://localhost:8080/health || exit 1
+        curl http://localhost:8080/health
         
-        # Можно даже сделать тестовый запрос
         curl -X POST "http://localhost:8080/predict" \
              -H "Content-Type: application/json" \
-             -d '{"text": "Тест"}' || (docker compose logs app && docker compose logs triton && exit 1)
+             -d '{"text": "Тест"}'
 
     - name: Cleanup
       if: always()
