@@ -7,10 +7,14 @@ import pandas as pd
 import joblib
 import yaml
 from dotenv import load_dotenv
-import git
+import argparse
 
 
 load_dotenv()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--exp_name", type=str, default="default-exp")
+args = parser.parse_args()
 
 mlflow_tracking_uri = "file:./mlruns"
 artifact_root = "s3://nlp-mlops-coursework/mlflow-artifacts"
@@ -27,9 +31,6 @@ except mlflow.exceptions.MlflowException:
     experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
 
 mlflow.set_experiment(experiment_name)
-
-repo = git.Repo(search_parent_directories=True)
-sha = repo.head.object.hexsha
 
 
 def train():
@@ -53,18 +54,7 @@ def train():
 
     print("Начало обучения...")
     
-    with mlflow.start_run():
-        # Проверяем, есть ли незакоммиченные изменения
-        if repo.is_dirty():
-            mlflow.set_tag("git.commit", f"{sha}-dirty")
-            mlflow.set_tag("git.dirty", "True")
-            # Можно даже сохранить diff изменений как артефакт!
-            diff = repo.git.diff(repo.head.commit.tree)
-            mlflow.log_text(diff, "git_diff.patch")
-        else:
-            mlflow.set_tag("git.commit", sha)
-            mlflow.set_tag("git.dirty", "False")
-        
+    with mlflow.start_run(run_name=args.exp_name):        
         mlflow.log_params(model_params)
         mlflow.log_params(split_params)
 
