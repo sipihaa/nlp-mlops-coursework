@@ -5,6 +5,7 @@ from nltk.corpus import stopwords
 import pymorphy3
 from tqdm.auto import tqdm
 from sentence_transformers import SentenceTransformer
+import emoji
 
 
 try:
@@ -22,9 +23,11 @@ STOP_WORDS.update(GARBAGE_LIST)
 def preprocess_text(text):
     if not isinstance(text, str): 
         return ""
+    text = emoji.demojize(text, language='ru')
     text = text.lower()
     text = re.sub(r'(https?://\S+)|(www\.\S+)|(\w+\.(com|net|org|ru|me|cc|to)/\S+)', ' ', text)
     text = re.sub(r'\[(id|club)\d+\|.*?\]', '', text)
+    text = text.replace(':', ' ').replace('_', ' ')
     text = re.sub(r'[^a-zа-яё\s]', ' ', text)
 
     words = text.split()
