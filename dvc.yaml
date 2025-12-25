@@ -1,5 +1,4 @@
 stages:
-  # ЭТАП 1: Сбор данных
   parse:
     cmd: python src/data/vk_parser.py
     deps:
@@ -8,7 +7,6 @@ stages:
       - data/raw/aviation.csv
       - data/raw/road_transport.csv
 
-  # ЭТАП 2: Предобработка (Очистка + Эмбеддинги)
   preprocess:
     cmd: python src/data/preprocessor.py
     deps:
@@ -19,7 +17,6 @@ stages:
       - data/processed/data_with_embeddings.pkl
       - data/processed/processed_data.csv
 
-  # ЭТАП 3: Обучение модели
   train:
     cmd: python src/models/train.py
     deps:

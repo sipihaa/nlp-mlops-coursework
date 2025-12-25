@@ -21,7 +21,7 @@
 ### Процесс обучения
 Обучение запускается через DVC пайплайн:
 ```bash
-dvc exp run -n <experiment_name> --set-param exp_name=<experiment_name>
+dvc exp run -n <experiment_name>
 ```
 
 ## Метрики и результаты
