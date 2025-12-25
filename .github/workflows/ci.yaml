@@ -72,7 +72,7 @@ jobs:
         # Можно даже сделать тестовый запрос
         curl -X POST "http://localhost:8080/predict" \
              -H "Content-Type: application/json" \
-             -d '{"text": "Тестовый полет на самолете"}'
+             -d '{"text": "Тест"}' || (docker compose logs app && docker compose logs triton && exit 1)
 
     - name: Cleanup
       if: always()
