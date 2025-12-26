@@ -1,26 +1,24 @@
 name: "classifier"
 backend: "onnxruntime"
-max_batch_size: 8  # Включаем поддержку батчинга
+max_batch_size: 8
 
 input [
   {
-    name: "float_input"  # Имя должно совпадать с тем, что в скрипте конвертации
+    name: "float_input"
     data_type: TYPE_FP32
-    dims: [ 312 ]        # Размерность вектора BERT
+    dims: [ 312 ]
   }
 ]
 output [
   {
-    name: "label" # Sklearn onnx обычно выдает label и probabilities
-    data_type: TYPE_INT64 # Или TYPE_INT32, зависит от конвертации
+    name: "label"
+    data_type: TYPE_INT64
     dims: [ 1 ]
-    reshape: { shape: [ ] }  # <--- ДОБАВЬТЕ ЭТУ СТРОКУ
-    # Это говорит: "Для одного примера размерность пустая (скаляр),
-    # значит для батча это будет просто [Batch_Size]"
+    reshape: { shape: [ ] } 
   },
   {
     name: "probabilities"
     data_type: TYPE_FP32
-    dims: [ 2 ] # Вероятности для 2 классов
+    dims: [ 2 ]
   }
 ]
